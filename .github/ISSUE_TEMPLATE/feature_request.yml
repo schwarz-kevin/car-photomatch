@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a useful addition for car photomatching
+title: '[Feature] '
+labels: [enhancement]
+body:
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Current workflow and problem
+      description: What do you currently do in Blender, and what is difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Desired behavior
+      description: Describe what the plugin should do and which cameras or scenes it should affect
+    validations:
+      required: true

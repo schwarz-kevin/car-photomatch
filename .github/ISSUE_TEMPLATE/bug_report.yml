@@ -1,0 +1,42 @@
+name: Bug report
+description: Report incorrect behavior or an error in Car PhotoMatch
+title: '[Bug] '
+labels: [bug]
+body:
+  - type: input
+    id: blender
+    attributes:
+      label: Blender version
+      placeholder: e.g. 5.2.0
+    validations:
+      required: true
+  - type: input
+    id: addon
+    attributes:
+      label: Car PhotoMatch version
+      placeholder: e.g. 0.3.1
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the exact buttons or commands you used
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Full traceback (if applicable)
+      render: text

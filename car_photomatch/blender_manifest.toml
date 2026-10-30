@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+id = "car_photomatch"
+version = "0.3.1"
+name = "Car PhotoMatch"
+tagline = "Match a camera to a car photograph using 3D and 2D landmarks"
+maintainer = "Car PhotoMatch Project"
+type = "add-on"
+blender_version_min = "5.2.0"
+license = ["SPDX:GPL-3.0-or-later"]
+
+[permissions]
+files = "Load reference photographs from local storage"
