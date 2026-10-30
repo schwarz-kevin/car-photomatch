@@ -81,3 +81,7 @@ The **release ZIP** has `blender_manifest.toml` at its archive root. The **GitHu
 ## License
 
 Car PhotoMatch is distributed under **GPL-3.0-or-later**. See [LICENSE](LICENSE). The code's SPDX tags and `blender_manifest.toml` identify the license. Reference photographs and 3D models are not included; you are responsible for your own rights to those assets.
+
+## Transparency Notice
+
+Most of this code was **vibe coded** but it solves a niche use case. I hope some people might participate from this.
