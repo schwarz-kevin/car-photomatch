@@ -34,9 +34,11 @@ With the reference image and a perspective camera selected, press **Solve Camera
 - **Weak solve:** projection error is high or the body alignment is visibly wrong. Check whether a landmark was placed on the *wrong* corner, the mesh geometry differs from the photographed car, or points cluster on one flat region.
 - **Unstable solve:** distribute points more broadly and give the camera a sensible initial angle before retrying. A single photo does not determine arbitrary lens distortion or fix incorrect vehicle proportions.
 
-## Step 5 — Refine in Solid mode
+## Step 5 — Refine the photo overlay and camera
 
-In the 3D View sidebar, open **Global Match Display** and choose **Match View**. This switches to Solid shading, enables X-Ray and overlays the photograph in front of the mesh. Use **Photo Opacity** and **Model Opacity (X-Ray)** until both the photo and geometry are readable.
+In the 3D View sidebar, open **Reference Photo Display**. Turn on **Show Reference Photo**, adjust **Photo Opacity**, and choose whether the photo appears **in front of** or **behind** the model. These reference-photo settings apply to photomatch cameras in the current scene.
+
+Choose **Solid**, **Wireframe**, **Material Preview**, **Rendered**, and **X-Ray** using Blender's own viewport controls. Car PhotoMatch no longer changes the viewport shading mode. If an older rim construction guide still forces visible edges, use **Rim PhotoMatch → Advanced & Display → Fix Old Rig Wire Overlays** or hide its collection.
 
 In the Image Editor, the overlay legend is:
 

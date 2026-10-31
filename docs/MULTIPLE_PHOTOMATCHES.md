@@ -17,7 +17,7 @@
 
 1. In **Reference & Camera**, select the older camera from the Camera field.
 2. Click **View Selected Camera**. It makes that camera active, selects its attached photo and **restores its photo dimensions/aspect ratio** on the scene's render resolution.
-3. Use **Global Match Display** and **Camera Fine Tune** to inspect/refine the camera manually.
+3. Use **Reference Photo Display** to adjust the photo opacity or its front/behind placement, and **Camera Fine Tune** to adjust the camera manually. Set Solid, Wireframe, Material Preview or X-Ray directly in Blender.
 
 **Important limitation:** Old *2D* landmark pairs are **not archived by camera**. The old camera's transform, focal length, and photo remain, so the match can be viewed and rendered, but to run the solver again for an older angle you must recreate its 2D pairs.
 
@@ -33,6 +33,6 @@ Blender's render resolution belongs to the **scene**, not to each camera. When y
 | Attached reference photograph | Each camera independently |
 | Landmark pairs for current solve | Active scene state (older 2D points intentionally discarded) |
 | Photo overlay opacity and front/behind layer | Shared across background images on all cameras in the **same scene** |
-| Solid/Wireframe/X-Ray controls | Shared scene values, applied to **open 3D Viewports** showing that scene |
+| Solid/Wireframe/Material Preview/Rendered/X-Ray | Controlled by **Blender**, not by PhotoMatch |
 | Render resolution | One value per scene; restored by **View Selected Camera** |
 | Car geometry | Shared (not copied or modified) |
