@@ -1,87 +1,101 @@
 # Car PhotoMatch
 
-**Match Blender cameras to car photos using an existing 3D model.** Car PhotoMatch is a free, offline Blender **5.2+** extension built for automotive photomatching. Pick corresponding 3D car features and 2D photo points, solve the camera, and compare the result over the photograph in Solid view.
+**Match Blender cameras to car photos — or build wheel rims from a calibrated photograph.**
 
-**Release:** `v0.3.1` · **License:** GPL-3.0-or-later · **Status:** user-tested photomatching workflow; automated tests pass. Blender API behavior may vary across builds.
+Car PhotoMatch is a free, offline Blender **5.2** extension for automotive photo matching. The original car workflow aligns an existing 3D vehicle with a photograph using corresponding 3D/2D landmarks. The **experimental Rim PhotoMatch mode** uses a detected circular edge to estimate a modeling camera and create dimensioned mesh guides for rim modeling.
 
-> **Installing?** Download **[`car_photomatch_0_3_1.zip`](releases/car_photomatch_0_3_1.zip)**. Install **that ZIP**, not the complete GitHub repository ZIP. No separate Python packages or network access are required inside Blender.
+**Latest version:** `v0.4.12` · **License:** GPL-3.0-or-later · **Status:** Car photomatching user-tested; rim matching is experimental. Blender 5.2 runtime testing across systems is incomplete.
 
-## Highlights
+**[Download v0.4.12](https://github.com/schwarz-kevin/car-photomatch/releases/tag/v0.4.12)** · [Documentation](docs/TUTORIAL.md) · [Report a bug](https://github.com/schwarz-kevin/car-photomatch/issues)
 
-- **Model-first camera solve:** calibrate camera position, orientation and optionally focal length to an existing 3D vehicle.
-- **Manual landmarks:** match a clicked 3D mesh location (or cursor/object origin) with a corresponding photo pixel.
-- **Multiple photographs, one Blender scene:** **New Photomatch** keeps the old solved camera and photo, creates a separate camera, and optionally reuses 3D landmarks. No duplicated car geometry.
-- **Global Solid-mode match view:** photo overlay opacity, photo-over-model/behind-model, Solid/Wireframe, X-Ray and X-Ray model opacity are shared by all match cameras **within the same scene**.
-- **Revisit older cameras:** **View Selected Camera** restores the selected camera's photo and its aspect ratio; **Camera Fine Tune** edits camera pose, lens and shifts.
-- **Visual feedback:** marker IDs, photo/model projection crosses, error vectors and RMS error after solving.
-- **Local and offline:** Python, Blender API and bundled NumPy only.
+> **Install:** From the release's **Assets**, download `car_photomatch_0_4_12_ui_workflow.zip`. Do **not** install GitHub's automatically generated **Source code (zip)**. The add-on runs locally without separately installed Python packages.
 
-## Install in Blender
+## Features
 
-1. Download [`releases/car_photomatch_0_3_1.zip`](releases/car_photomatch_0_3_1.zip).
-2. Open **Blender 5.2** → **Edit → Preferences → Get Extensions** → top-right drop-down → **Install from Disk**.
-3. Select the downloaded **extension ZIP**, and enable **Car PhotoMatch** if needed.
-4. In the **3D Viewport**, press **N** and select the **PhotoMatch** tab.
+### Car PhotoMatch (existing model)
 
-If upgrading from v0.3.0, restart Blender before enabling v0.3.1. See [installation and upgrades](docs/INSTALLATION.md).
+- Manually pair recognizable points on your 3D car mesh and photo; solve camera pose and optionally focal length.
+- Reprojection-error feedback and adjustable camera parameters for refinement.
+- **New Photomatch:** multiple independent camera matches in one Blender scene; previous camera and photograph remain accessible.
+- **Reference Photo Display:** set photo visibility, opacity and photo-in-front/behind for all match cameras in the scene.
+- **Blender controls Solid, Wireframe, Material Preview, Rendered and X-Ray.** The add-on no longer changes viewport shading modes.
 
-## 5-minute matching tutorial
+### Rim PhotoMatch (experimental)
 
-1. Open your `.blend` with an existing car model. Optionally select its collection under **Car Collection**.
-2. Click **Load Reference Photo** in the **PhotoMatch** sidebar; enter camera view with **Numpad 0**.
-3. Split your workspace into a **3D Viewport** and an **Image Editor** in ordinary **View** mode, showing the same photo. Both editors have a **PhotoMatch** sidebar.
-4. Click **Add Landmark Pair**. In 3D View, choose **Click Point on Car Mesh** and click a distinctive feature. In Image Editor, choose **Click Corresponding Photo Point** and click that feature in the photograph.
-5. Repeat for **at least 6** complete pairs, preferably **8–15** spread across the car's length, width and height (wheel hubs, light corners, windshield corners, etc.).
-6. Click **Solve Camera**. Inspect the photo/model overlay, and refine inaccurate landmarks if needed.
-7. For a second photograph, select **Reuse 3D Landmarks on New Match** (optional), click **New Photomatch**, load the next photo and solve again. Your earlier camera remains intact.
-8. Select any earlier camera, then click **View Selected Camera** to return to that match. For a Solid-mode blend, open **Global Match Display** and choose **Match View**.
+- Select a rough rim image area, detect multiple circular-edge candidates, or use the **8-click** fallback.
+- Choose the photographed physical ring (bead seat, lip, center bore, hub face, or manual) and enter known wheel dimensions.
+- Estimate camera poses with an **assumed focal length**; inspect alternative pose where available. One circular edge is **not sufficient** for a unique camera calibration.
+- Create **mesh-circle** rim construction guides with controllable vertex count.
+- Optionally create **one mesh object** holding all bolt/lug circles using lug count, PCD, hole size and vertex count.
+- Optional **ET / hub mounting guide** using rim width, ET and center-bore diameter; update existing ring/ET guides.
+- Compact workflow UI: collapsed sections, with **Create Modeling Rig** after geometry/lug/ET configuration and before camera solving.
+- Fix Old Rig Wire Overlays action for older generated rig objects.
 
-For point-picking tips, worked examples and fine-tuning, read the [step-by-step tutorial](docs/TUTORIAL.md).
+## Install in Blender 5.2
+
+1. Download [`car_photomatch_0_4_12_ui_workflow.zip`](https://github.com/schwarz-kevin/car-photomatch/releases/tag/v0.4.12) from the **Assets** section.
+2. In Blender, go to **Edit → Preferences → Get Extensions → Install from Disk**.
+3. Select the **installer ZIP**, enable Car PhotoMatch if needed, and restart Blender after upgrading.
+4. In a 3D Viewport or Image Editor, press **N** and open the **PhotoMatch** tab.
+
+A local copy of the installer also lives at [`releases/car_photomatch_0_4_12_ui_workflow.zip`](releases/car_photomatch_0_4_12_ui_workflow.zip).
+
+## Quick start — existing car model
+
+1. Open a `.blend` with your car mesh. Click **Load Reference Photo** in Car PhotoMatch.
+2. Split the workspace between a **3D Viewport** and **Image Editor** showing the photograph.
+3. Click **Add Landmark Pair**; choose a corresponding 3D mesh feature and 2D image point.
+4. Add at least six good pairs (preferably 8–15 spread across the vehicle); click **Solve Camera**.
+5. Adjust photo transparency/placement in **Reference Photo Display**. Choose viewport shading yourself in Blender.
+6. Use **New Photomatch** to create a second camera without duplicating the car model.
+
+See [Car photomatching tutorial](docs/TUTORIAL.md).
+
+## Quick start — modeling a rim from a photograph
+
+1. In the Image Editor, open **Rim PhotoMatch (Experimental) → 1. Photo & Edge**, then **Load Rim Photograph**.
+2. Click **Draw Rim Area** to drag a loose rectangle around the rim; click **Detect Rim Edges**, or use **Fallback: 8 Edge Clicks**.
+3. Choose the matching highlighted contour. Under **2. Rim Geometry**, enter nominal diameter and width, choose **Detected Ring**, and set circle vertices.
+4. Optionally enable **Lug / Bolt Pattern Guides** (count, PCD, hole diameter, vertices) and **ET / Hub Guide** (ET, center bore).
+5. Click **Create Modeling Rig** beneath the geometry sections; the generated guides are separate meshes.
+6. Expand **3. Camera**, enter an assumed focal length, and click **Estimate Rim Camera**. Inspect the result and use **Try Other Pose** if necessary.
+
+See the [Rim PhotoMatch tutorial](docs/RIM_PHOTOMATCH.md) for the ring-reference and measurement limitations.
 
 ## Documentation
 
-| Guide | What it covers |
+| Guide | Contents |
 | --- | --- |
-| [Installation and upgrading](docs/INSTALLATION.md) | Install, replace old versions, verify the add-on |
-| [Photomatching tutorial](docs/TUTORIAL.md) | Prepare a car, pair markers, solve, refine, save |
-| [Multiple camera matches](docs/MULTIPLE_PHOTOMATCHES.md) | New Photomatch, reuse markers, switch to old cameras |
-| [Solid-mode overlays and camera adjustment](docs/VIEWPORT_AND_CAMERA.md) | Shared display controls, X-Ray, opacity, fine tune |
-| [Control reference](docs/REFERENCE.md) | All panels, options, matching data and solver limitations |
-| [Troubleshooting and FAQ](docs/TROUBLESHOOTING.md) | Installation, photo visibility, inaccurate matching |
-| [Developing and testing](docs/DEVELOPMENT.md) | Code structure, tests, Blender integration checks |
-| [Publishing to GitHub](docs/PUBLISHING.md) | Uploading source and creating a GitHub Release |
+| [Installation](docs/INSTALLATION.md) | Install, upgrade and verify |
+| [Car matching tutorial](docs/TUTORIAL.md) | Correspondences, solve and refine |
+| [Rim matching tutorial](docs/RIM_PHOTOMATCH.md) | Edge detection, mesh guides, PCD and ET |
+| [Multiple car photomatches](docs/MULTIPLE_PHOTOMATCHES.md) | Create, reuse landmarks and revisit cameras |
+| [Reference photo display](docs/VIEWPORT_AND_CAMERA.md) | Transparency and front/behind; Blender shading |
+| [Settings reference](docs/REFERENCE.md) | Controls and limitations |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Frequent problems and recovery |
+| [Development and tests](docs/DEVELOPMENT.md) | Source structure and testing |
+| [Publish next release](docs/PUBLISHING.md) | Git commands and release assets |
 | [Changelog](CHANGELOG.md) | Version history |
-| [Contributing](CONTRIBUTING.md) | Bug reports and contribution notes |
 
-## How camera matching works
+## Limitations
 
-Each landmark pair contains a known 3D position on the car and its matching 2D image coordinate. A numerical optimizer minimizes weighted camera **reprojection error** using a robust loss. It can estimate camera orientation, translation and focal length, or hold focal length fixed. The car mesh itself is not modified. Poorly distributed or inaccurate points, incorrect model proportions, and lens distortion can limit accuracy.
+- The experimental rim detector can select the wrong physical ring; verify the green contour.
+- A **single circular edge** cannot uniquely solve focal length and camera pose. You must choose/assume a focal length and assess the result.
+- Nominal rim diameter refers to bead-seat diameter, **not necessarily the visible outer lip**. Lip dimensions may be approximations; override using a known physical measurement for accuracy.
+- Rim width alone does not determine spoke dish depth or the axial position of every photographed ring.
+- Some rig topology changes require removing the old construction rig and creating another.
+- For camera-photo overlays, Blender controls viewport shading; Car PhotoMatch controls only photo opacity and front/behind placement.
 
-## Project files
+## Development
 
-```text
-car_photomatch/                Blender extension source (manifest, UI, solver)
-car_photomatch_tests/          NumPy + mocked Blender-free automated tests
-releases/car_photomatch_0_3_1.zip  Installable Blender extension
-.github/workflows/            GitHub Actions test workflow
-.github/ISSUE_TEMPLATE/       Bug/feature request forms
-docs/                         Tutorials and detailed documentation
-LICENSE                       GPL v3 license text (code: GPL-3.0-or-later)
-```
+The repository includes Blender Python extension source, NumPy-based solver code, mocked/numerical tests, and a GitHub Actions workflow. The automated tests **do not replace** real Blender 5.2 UI testing.
 
-The **release ZIP** has `blender_manifest.toml` at its archive root. The **GitHub repository ZIP** contains source, tests and documentation and is **not** the Blender installer.
-
-## Compatibility and scope
-
-- Designed for **Blender 5.2** and perspective cameras. Earlier versions are not supported; later versions are not guaranteed.
-- No automatic wheel identification, silhouette solve, lens-distortion correction or saved 2D points for *past* match cameras.
-- All match cameras share the same scene's render resolution; **View Selected Camera** restores the selected photo dimensions. Global match display settings are **per scene**, while viewport shading is applied to open viewports showing that scene.
-- Automated tests cover solver logic and mock-based add-on behavior. Blender integration tests should be completed on the target machine; see [development notes](docs/DEVELOPMENT.md).
+Contributions and bug reports are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Car PhotoMatch is distributed under **GPL-3.0-or-later**. See [LICENSE](LICENSE). The code's SPDX tags and `blender_manifest.toml` identify the license. Reference photographs and 3D models are not included; you are responsible for your own rights to those assets.
+Distributed under **GPL-3.0-or-later**. See [LICENSE](LICENSE). No third-party photo or 3D-model assets are included.
 
-## Transparency Notice
+## Transparency notice
 
-Most of this code was **vibe coded** but it solves a niche use case. I hope some people might participate from this.
+Car PhotoMatch was developed primarily with AI-assisted coding to solve a specific problem in my automotive 3D workflow. I have tested the original photomatching workflow in my own projects and found it useful; the rim mode remains experimental. I'm sharing it openly so others can use it, test it, and contribute improvements. Bug reports and contributions are welcome.

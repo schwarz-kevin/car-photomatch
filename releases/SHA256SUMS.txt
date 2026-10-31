@@ -1,1 +1,2 @@
 c8a38911d01c72841292baa1bfb198aaf467cb381a1fb2256c1155b150152a60  car_photomatch_0_3_1.zip
+dff534d52d6387c729442c3506195b80cc30a73bddfacefb989a6140b5f48e54  car_photomatch_0_4_12_ui_workflow.zip

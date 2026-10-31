@@ -7,10 +7,10 @@ in the 3D View and in an Image Editor (View mode).
 bl_info = {
     'name': 'Car PhotoMatch',
     'author': 'Car PhotoMatch Project',
-    'version': (0, 3, 1),
+    'version': (0, 4, 12),
     'blender': (5, 2, 0),
     'location': '3D View and Image Editor > Sidebar > PhotoMatch',
-    'description': 'Match a perspective camera to a car photo using corresponding 3D/2D landmarks',
+    'description': 'Automotive camera matching plus an experimental rim photo calibration workflow',
     'category': 'Camera',
 }
 
@@ -67,65 +67,9 @@ def _apply_photo_display(scene, settings):
                 bg.display_depth = settings.photo_depth
 
 
-def _iter_scene_viewports(context):
-    """Iterate 3D viewports in windows showing this scene, without bpy.ops."""
-    wm = getattr(context, 'window_manager', None)
-    scene = getattr(context, 'scene', None)
-    if wm is not None:
-        for window in wm.windows:
-            if window.scene != scene:
-                continue
-            for area in window.screen.areas:
-                if area.type == 'VIEW_3D':
-                    yield area.spaces.active, area
-    elif getattr(context, 'screen', None):
-        for area in context.screen.areas:
-            if area.type == 'VIEW_3D':
-                yield area.spaces.active, area
-
-
-def _apply_view_display(context, settings):
-    for space, area in _iter_scene_viewports(context):
-        space.shading.type = settings.view_shading
-        space.shading.show_xray = settings.use_xray
-        space.shading.xray_alpha = settings.model_opacity
-        area.tag_redraw()
-
-
-def _apply_model_in_front(scene, settings):
-    """Modify only the chosen Car Collection, and restore original flags."""
-    selected = set()
-    if settings.model_collection and settings.model_in_front:
-        selected = {obj.as_pointer() for obj in settings.model_collection.all_objects
-                    if obj.type == 'MESH' and obj.name in scene.objects}
-    for obj in scene.objects:
-        if obj.type != 'MESH':
-            continue
-        is_selected = obj.as_pointer() in selected
-        if is_selected:
-            if '_car_pm_original_in_front' not in obj:
-                obj['_car_pm_original_in_front'] = bool(obj.show_in_front)
-            obj.show_in_front = True
-        elif '_car_pm_original_in_front' in obj:
-            obj.show_in_front = bool(obj['_car_pm_original_in_front'])
-            del obj['_car_pm_original_in_front']
-
-
 def _photo_display_changed(self, context):
     if context and context.scene:
         _apply_photo_display(context.scene, self)
-        _redraw(context)
-
-
-def _view_display_changed(self, context):
-    if context and context.scene:
-        _apply_view_display(context, self)
-        _redraw(context)
-
-
-def _model_display_changed(self, context):
-    if context and context.scene:
-        _apply_model_in_front(context.scene, self)
         _redraw(context)
 
 
@@ -213,28 +157,17 @@ class CARPM_Settings(bpy.types.PropertyGroup):
     image: PointerProperty(type=bpy.types.Image, name='Photo')
     camera: PointerProperty(type=bpy.types.Object, name='Camera')
     model_collection: PointerProperty(type=bpy.types.Collection, name='Car Collection',
-                                      description='Optional car meshes for picking and In Front mode',
-                                      update=_model_display_changed)
+                                      description='Optional car meshes for landmark picking')
     pairs: CollectionProperty(type=CARPM_Pair)
     active_pair: IntProperty(name='Active Pair', default=0, min=0)
     # All display settings below are per-scene, NOT per-camera. Every camera
     # with a background image in this scene receives the same photo settings.
     opacity: FloatProperty(name='Photo Opacity', default=.6, min=0., max=1., update=_opacity_changed)
     photo_depth: EnumProperty(name='Photo Placement', items=[
-        ('FRONT', 'Photo Over Model', 'Blend the reference photograph over the Solid model'),
-        ('BACK', 'Photo Behind Model', 'Keep the reference photo behind geometry')],
+        ('FRONT', 'Photo Over Model', 'Place the reference image in front of 3D geometry'),
+        ('BACK', 'Photo Behind Model', 'Place the reference image behind 3D geometry')],
         default='FRONT', update=_photo_display_changed)
     show_camera_photo: BoolProperty(name='Show Photo', default=True, update=_photo_display_changed)
-    view_shading: EnumProperty(name='View Shading', items=[
-        ('SOLID', 'Solid', 'Solid shading with photo overlay'),
-        ('WIREFRAME', 'Wireframe', 'Wireframe shading')], default='SOLID', update=_view_display_changed)
-    use_xray: BoolProperty(name='Use X-Ray', default=False, update=_view_display_changed)
-    model_opacity: FloatProperty(name='Model Opacity (X-Ray)', default=.5,
-                                 min=0., max=1., update=_view_display_changed,
-                                 description='How opaque objects appear when X-Ray is enabled')
-    model_in_front: BoolProperty(name='Model In Front', default=False,
-                                 update=_model_display_changed,
-                                 description='Show objects in Car Collection in front; may obscure the photo')
     lock_lens: BoolProperty(name='Lock Focal Length', default=False)
     huber_px: FloatProperty(name='Outlier Threshold (px)', default=12., min=1., max=250.)
     max_iterations: IntProperty(name='Solver Iterations', default=80, min=10, max=200)
@@ -277,7 +210,6 @@ class CARPM_OT_LoadPhoto(bpy.types.Operator, ImportHelper):
             context.scene.render.pixel_aspect_y = 1.
             camera = _setup_reference(context.scene, settings)
             _apply_photo_display(context.scene, settings)
-            _apply_view_display(context, settings)
             for area in context.screen.areas:
                 if area.type == 'IMAGE_EDITOR':
                     area.spaces.active.image = image
@@ -388,7 +320,6 @@ class CARPM_OT_NewPhotomatch(bpy.types.Operator):
             new_camera = _begin_new_photomatch(
                 context.scene, settings, self.keep_3d_landmarks, spaces)
             _apply_photo_display(context.scene, settings)
-            _apply_view_display(context, settings)
             # Keep the current viewport on the newly created camera.
             if context.area and context.area.type == 'VIEW_3D':
                 context.area.spaces.active.region_3d.view_perspective = 'CAMERA'
@@ -435,7 +366,6 @@ class CARPM_OT_ActivateCamera(bpy.types.Operator):
             scene.render.pixel_aspect_x = 1.
             scene.render.pixel_aspect_y = 1.
         _apply_photo_display(scene, s)
-        _apply_view_display(context, s)
         if context.screen:
             for area in context.screen.areas:
                 if area.type == 'VIEW_3D':
@@ -444,38 +374,6 @@ class CARPM_OT_ActivateCamera(bpy.types.Operator):
                     area.spaces.active.image = image
         _redraw(context)
         self.report({'INFO'}, f'Viewing {cam.name}; previous matching points are not restored')
-        return {'FINISHED'}
-
-
-class CARPM_OT_DisplayPreset(bpy.types.Operator):
-    bl_idname = 'car_pm.display_preset'
-    bl_label = 'PhotoMatch Display Preset'
-    bl_description = 'Apply this display preset to the scene and all open 3D viewports'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    preset: EnumProperty(items=[
-        ('MATCH', 'Match', 'Solid, X-Ray, photo over model'),
-        ('SOLID', 'Solid', 'Solid, opaque model, leave photo visible'),
-        ('WIRE', 'Wireframe', 'Wireframe and photo'),
-        ('XRAY', 'Toggle X-Ray', 'Enable or disable X-Ray')])
-
-    def execute(self, context):
-        s = context.scene.car_pm
-        if self.preset == 'MATCH':
-            s.view_shading = 'SOLID'
-            s.use_xray = True
-            s.show_camera_photo = True
-            s.photo_depth = 'FRONT'
-        elif self.preset == 'SOLID':
-            s.view_shading = 'SOLID'
-            s.use_xray = False
-        elif self.preset == 'WIRE':
-            s.view_shading = 'WIREFRAME'
-        elif self.preset == 'XRAY':
-            s.use_xray = not s.use_xray
-        _apply_photo_display(context.scene, s)
-        _apply_view_display(context, s)
-        _redraw(context)
         return {'FINISHED'}
 
 
@@ -489,10 +387,8 @@ class CARPM_OT_ApplyGlobalDisplay(bpy.types.Operator):
     def execute(self, context):
         s = context.scene.car_pm
         _apply_photo_display(context.scene, s)
-        _apply_view_display(context, s)
-        _apply_model_in_front(context.scene, s)
         _redraw(context)
-        self.report({'INFO'}, 'Scene display settings applied to all reference cameras')
+        self.report({'INFO'}, 'Reference photo settings applied to all cameras')
         return {'FINISHED'}
 
 
@@ -890,34 +786,21 @@ def _draw_ui(layout, context, image_editor=False):
 
 
 def _draw_global_display(layout, context):
+    """Only reference-photo controls. Blender owns all shading and X-Ray settings."""
     s = context.scene.car_pm
-    layout.label(text='Global Scene Display', icon='SHADING_SOLID')
-    layout.label(text='Applies to old and new match cameras')
-    row = layout.row(align=True)
-    for preset, title in [('MATCH', 'Match View'), ('SOLID', 'Solid'),
-                          ('WIRE', 'Wire'), ('XRAY', 'X-Ray')]:
-        op = row.operator('car_pm.display_preset', text=title)
-        op.preset = preset
-    layout.prop(s, 'show_camera_photo')
+    layout.label(text='Global Reference Photo', icon='IMAGE_DATA')
+    layout.label(text='All photomatch cameras in this scene')
+    layout.prop(s, 'show_camera_photo', text='Show Reference Photo')
     col = layout.column(align=True)
     col.enabled = s.show_camera_photo
-    col.prop(s, 'opacity', slider=True)
-    col.prop(s, 'photo_depth', text='Layer')
-    layout.prop(s, 'view_shading', text='Shading')
-    layout.prop(s, 'use_xray')
-    col = layout.column()
-    col.enabled = s.use_xray
-    col.prop(s, 'model_opacity', slider=True)
-    row = layout.row()
-    row.enabled = s.model_collection is not None
-    row.prop(s, 'model_in_front')
-    if not s.model_collection:
-        layout.label(text='Select Car Collection for In Front')
+    col.prop(s, 'opacity', text='Photo Opacity', slider=True)
+    col.prop(s, 'photo_depth', text='Photo Layer')
     layout.operator('car_pm.apply_global_display', text='Apply to All Cameras', icon='FILE_REFRESH')
+    layout.label(text='Set Solid/Wire/Materials in Blender')
 
 
 class CARPM_PT_ViewDisplay(bpy.types.Panel):
-    bl_label = 'Global Match Display'
+    bl_label = 'Reference Photo Display'
     bl_idname = 'CARPM_PT_view_display'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -929,7 +812,7 @@ class CARPM_PT_ViewDisplay(bpy.types.Panel):
 
 
 class CARPM_PT_ImageDisplay(bpy.types.Panel):
-    bl_label = 'Global Match Display'
+    bl_label = 'Reference Photo Display'
     bl_idname = 'CARPM_PT_image_display'
     bl_space_type = 'IMAGE_EDITOR'
     bl_region_type = 'UI'
@@ -986,10 +869,12 @@ class CARPM_PT_Image(bpy.types.Panel):
         _draw_ui(self.layout, context, image_editor=True)
 
 
+from . import rim_mode
+
 CLASSES = (
     CARPM_Pair, CARPM_Settings, CARPM_UL_Pairs,
     CARPM_OT_LoadPhoto, CARPM_OT_SetupCamera, CARPM_OT_NewPhotomatch,
-    CARPM_OT_ActivateCamera, CARPM_OT_DisplayPreset, CARPM_OT_ApplyGlobalDisplay,
+    CARPM_OT_ActivateCamera, CARPM_OT_ApplyGlobalDisplay,
     CARPM_OT_PackImage,
     CARPM_OT_AddPair, CARPM_OT_RemovePair, CARPM_OT_CursorPoint,
     CARPM_OT_ObjectOrigin, CARPM_OT_Pick3D, CARPM_OT_Pick2D,
@@ -1010,9 +895,11 @@ def register():
     if not bpy.app.background:
         _VIEW_HANDLE = bpy.types.SpaceView3D.draw_handler_add(_draw_view_markers, (), 'WINDOW', 'POST_PIXEL')
         _IMAGE_HANDLE = bpy.types.SpaceImageEditor.draw_handler_add(_draw_image_markers, (), 'WINDOW', 'POST_PIXEL')
+    rim_mode.register()
 
 
 def unregister():
+    rim_mode.unregister()
     global _VIEW_HANDLE, _IMAGE_HANDLE
     if _VIEW_HANDLE is not None:
         bpy.types.SpaceView3D.draw_handler_remove(_VIEW_HANDLE, 'WINDOW')

@@ -36,7 +36,7 @@ class RegistrationTests(unittest.TestCase):
             app=types.SimpleNamespace(background=False))
         ns = {'bpy': bpy, 'CLASSES': classes, 'PointerProperty': lambda type: 'fake_property',
               'CARPM_Settings': object(), '_draw_view_markers': lambda: None,
-              '_draw_image_markers': lambda: None, '_VIEW_HANDLE': None, '_IMAGE_HANDLE': None}
+              '_draw_image_markers': lambda: None, '_VIEW_HANDLE': None, '_IMAGE_HANDLE': None, 'rim_mode': types.SimpleNamespace(register=lambda: visited.append(('rim_register', None)), unregister=lambda: visited.append(('rim_unregister', None)))}
         funcs = ast.Module(body=[register_fn, unregister_fn], type_ignores=[])
         exec(compile(funcs, str(ADDON), 'exec'), ns)
         ns['register']()

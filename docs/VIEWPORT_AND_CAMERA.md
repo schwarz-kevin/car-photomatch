@@ -1,50 +1,22 @@
-# Global photo overlay and camera fine-tuning
+# Reference Photo Display and camera controls (v0.4.12)
 
-The v0.3.1 display settings are **scene-wide**. This includes cameras made with v0.2 and cameras with renamed objects, provided they have a camera background photo. Camera transform, focal length and actual photo selection are not modified by these global display controls.
+The extension **does not control Blender viewport shading**. Use Blender's own controls for Solid, Wireframe, Material Preview, Rendered and X-Ray.
 
-## Make the photo visible in Solid mode
+## Shared photo controls
 
-1. Enter camera view (**Numpad 0**).
-2. Open **PhotoMatch → Global Match Display** in the 3D Viewport sidebar.
-3. Click **Match View**. This selects **Solid**, enables **X-Ray**, turns on **Show Photo** and sets photo layer to **Photo Over Model**.
-4. Adjust **Photo Opacity** (photo strength) and **Model Opacity (X-Ray)** (mesh transparency) to taste.
-5. Switch to another camera through **View Selected Camera**. The same overlay settings continue to apply.
+Expand **Reference Photo Display** in the 3D Viewport or Image Editor PhotoMatch tab:
 
-## Controls
+- **Show Reference Photo**: enable/disable photo background display on match cameras.
+- **Photo Opacity**: how visible the image is.
+- **Photo Layer / Photo Placement**: show the reference in front of or behind the model.
+- **Apply Display to All Cameras**: synchronize the active scene's reference-camera backgrounds if needed.
 
-| Control | Effect |
-| --- | --- |
-| **Match View** | Solid + X-Ray + photo over model |
-| **Solid** | Solid, X-Ray off; image stays available |
-| **Wire** | Wireframe; image remains available |
-| **X-Ray** | Toggle the current X-Ray setting |
-| **Show Photo** | Show/hide camera background photographs |
-| **Photo Opacity** | Set alpha on every camera background photo in the scene |
-| **Layer** | **Photo Over Model** (front) vs **Photo Behind Model** (back) |
-| **Shading** | Shared setting for Solid or Wireframe in available viewports |
-| **Use X-Ray** | Enable/disable semi-transparent model rendering in Solid |
-| **Model Opacity (X-Ray)** | Blender X-Ray mesh alpha when enabled |
-| **Model In Front** | Optional model visibility mode for mesh objects in the selected **Car Collection**; may obscure the photo |
-| **Apply to All Cameras** | Reapply shared photo display to all cameras and current viewports |
+These settings are **per scene** and work with older photomatch cameras, not only newly generated ones.
 
-**Blender behavior:** Camera background settings live on camera data; viewport Solid/Wire/X-Ray shading lives on **3D Viewport areas**. The plugin applies the shared scene state to open viewports displaying the same scene. If you switch to a different workspace whose viewport was not active, use **Apply to All Cameras** there.
+## Revisit older car matches
 
-## Camera Fine Tune
+Select an older camera and click **View Selected Camera**. The add-on can restore that camera's photographic aspect ratio. Under **Camera Fine Tune**, you can edit pose, lens and shift. The solver is only rerun when requested.
 
-Open **PhotoMatch → Camera Fine Tune** (nested under the main 3D View panel). Select an old or new camera and click **View Selected Camera** before editing. Adjust:
+## Visual wire edges on construction rigs
 
-- **Position / Rotation** — precise manual changes to the active camera.
-- **Focal Length** — changes field of view and perspective compression.
-- **Shift X / Shift Y** — changes framing without rotating the camera.
-
-Fine-tuning changes the camera itself. The car model is untouched. The displayed solve RMS is from the last numerical solve and **is not automatically recomputed** for each manual camera edit.
-
-### Recommended adjustment order
-
-1. Confirm the image aspect ratio via **View Selected Camera**.
-2. Set photo and model opacities to make both visible.
-3. Adjust camera **rotation** to line up vehicle axes and front/rear perspectives.
-4. Adjust **position** to align wheel and body features.
-5. Adjust **focal length** if perspective compression is visibly wrong, and **shift** for small framing offsets.
-
-If you still have the active matching points, prefer correcting markers and re-solving instead of excessive manual tweaking.
+Some old rim guides had **Object Properties → Viewport Display → Wireframe** enabled, independent of Blender's global shading. In Rim PhotoMatch **Advanced & Display**, use **Fix Old Rig Wire Overlays** to disable those forced overlays for existing rim-guide meshes. Edge-only guide circles remain geometry without faces; their edges can still be visible when overlays are enabled.
